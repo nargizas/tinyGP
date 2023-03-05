@@ -13,10 +13,10 @@ FSET_START = ADD
 FSET_END = DIV
 
 MAX_LEN = 10000
-POPSIZE = 10000
+POPSIZE = 100000
 DEPTH = 5
 GENERATIONS = 100
-TSIZE = 2
+TSIZE = 3
 
 PMUT_PER_NODE = 0.05
 CROSSOVER_PROB = 0.9
@@ -25,31 +25,19 @@ CROSSOVER_PROB = 0.9
 class TinyGP():
 
     def __init__(self, fname, s) -> None:
-        self.fset_start = FSET_START
-        self.fset_end = FSET_END
-
-        self.max_len = MAX_LEN
-        self.popsize = POPSIZE
-        self.depth = DEPTH
-        self.generations = GENERATIONS
-        self.tsize = TSIZE
-
-        self.pmut_per_node = PMUT_PER_NODE
-        self.crossover_prob = CROSSOVER_PROB
-
         self.pc = 0
         self.fbestpop = 0.0
         self.favgpop = 0.0
 
         self.program = []
-        self.x = [0 for i in range(self.fset_start)]
+        self.x = [0 for i in range(FSET_START)]
 
         self.fitness_cases = 0
         self.var_number = 0
         self.random_number = 0
 
         self.targets = []
-        self.buffer = [0 for _ in range(self.max_len)]
+        self.buffer = [0 for _ in range(MAX_LEN)]
 
         self.fname = fname
         self.seed = s
@@ -58,19 +46,19 @@ class TinyGP():
 
         self.minrandom = 0
         self.maxrandom = 0
-        self.fitness = [0.0 for _ in range(self.popsize)]
+        self.fitness = [0.0 for _ in range(POPSIZE)]
         self.setup_fitness(self.fname)
         # print(f"var_number {self.var_number}")
         # print(f"random_number {self.random_number}")
         # print(f"maxrandom {self.maxrandom}")
         # print(f"minrandom {self.minrandom}")
         self.pop = self.create_random_pop(
-            self.popsize, self.depth, self.fitness)
+            POPSIZE, DEPTH, self.fitness)
 
         # print(f"population {self.pop}")
         # print(f"fitness {self.fitness}")
 
-        for i in range(self.fset_start):
+        for i in range(FSET_START):
             self.x[i] = (self.maxrandom - self.minrandom) * \
                 random() + self.minrandom
         # print(f"x {self.x}")
@@ -83,7 +71,7 @@ class TinyGP():
         primitive = self.program[self.pc]
         self.pc += 1
         # print(f"primitive {primitive}")
-        if primitive < self.fset_start:
+        if primitive < FSET_START:
             # print(f"here")
             # print(self.x[primitive])
             return self.x[primitive]
@@ -111,7 +99,7 @@ class TinyGP():
     def traverse(self, buffer: list[float], buffer_count: int) -> int:
         # print(f"buffer {buffer}")
         # print(f"buffer[{buffer_count}] {buffer[buffer_count]}")
-        if buffer[buffer_count] < self.fset_start:
+        if buffer[buffer_count] < FSET_START:
             return buffer_count + 1
 
         if buffer[buffer_count] == ADD or buffer[buffer_count] == SUB or buffer[buffer_count] == MUL or buffer[buffer_count] == DIV:
@@ -128,7 +116,7 @@ class TinyGP():
                         int(x) for x in line.split()]
                     self.targets = [
                         [0 for _ in range(self.var_number+1)] for _ in range(self.fitness_cases)]
-                    if (self.var_number + self.random_number) >= self.fset_start:
+                    if (self.var_number + self.random_number) >= FSET_START:
                         print("too many variables and constants")
                 else:
                     if i > self.fitness_cases:
@@ -181,7 +169,7 @@ class TinyGP():
     def print_indiv(self, buffer: list[str], buffer_counter: int) -> int:
         a1 = 0
         a2 = 0
-        if buffer[buffer_counter] < self.fset_start:
+        if buffer[buffer_counter] < FSET_START:
             if buffer[buffer_counter] < self.var_number:
                 print(f"X{buffer[buffer_counter] + 1 } ", end="")
             else:
@@ -210,11 +198,11 @@ class TinyGP():
         return a2
 
     def create_random_indiv(self, depth: int):
-        len = self.grow(self.buffer, 0, self.max_len, depth)
+        len = self.grow(self.buffer, 0, MAX_LEN, depth)
         # print(f"len: {len}")
 
         while len < 0:
-            len = self.grow(self.buffer, 0, self.max_len, depth)
+            len = self.grow(self.buffer, 0, MAX_LEN, depth)
 
         ind = self.buffer[0:len]
         return ind
@@ -231,26 +219,26 @@ class TinyGP():
     def print_params(self) -> None:
         print("-- TINY GP (Python version) --\n")
         print(f"SEED={self.seed}")
-        print(f"MAX_LEN={self.max_len}")
-        print(f"POPSIZE={self.popsize}")
-        print(f"DEPTH={self.depth}")
-        print(f"CROSSOVER_PROB={self.crossover_prob}")
-        print(f"PMUT_PER_NODE={self.pmut_per_node}")
+        print(f"MAX_LEN={MAX_LEN}")
+        print(f"POPSIZE={POPSIZE}")
+        print(f"DEPTH={DEPTH}")
+        print(f"CROSSOVER_PROB={CROSSOVER_PROB}")
+        print(f"PMUT_PER_NODE={PMUT_PER_NODE}")
         print(f"MIN_RANDOM={self.minrandom}")
         print(f"MAX_RANDOM={self.maxrandom}")
-        print(f"GENERATIONS={self.generations}")
-        print(f"TSIZE={self.tsize}")
+        print(f"GENERATIONS={GENERATIONS}")
+        print(f"TSIZE={TSIZE}")
         print("----------------------------------")
 
     def stats(self, fitness: list[float], pop: list[list[int]], gen: int):
-        best = randint(0, self.popsize-1)
+        best = randint(0, POPSIZE-1)
         # print(f"best {best}")
         node_count = 0
         self.fbestpop = self.fitness[best]
         # print(f"fbestpop {self.fbestpop}")
         self.favgpop = 0.0
 
-        for i in range(self.popsize):
+        for i in range(POPSIZE):
             node_count += self.traverse(self.pop[i], 0)
             # print(f"node_count {node_count}")
             self.favgpop += self.fitness[i]
@@ -261,18 +249,18 @@ class TinyGP():
                 # print(f"fbestpop {self.fbestpop}")
                 self.fbestpop = self.fitness[i]
 
-        self.avg_len = node_count / self.popsize
-        self.favgpop /= self.popsize
+        self.avg_len = node_count / POPSIZE
+        self.favgpop /= POPSIZE
         print(
             f"Generation={gen} Avg Fitness={(-1)*self.favgpop} Best Fitness={(-1)*self.fbestpop} Avg Size={self.avg_len}\nBest Individual: ")
         self.print_indiv(self.pop[best], 0)
         print("\n", flush=True)
 
     def tournament(self, fitness, tsize):
-        best = randint(0, self.popsize)
+        best = randint(0, POPSIZE)
         fbest = -1.0e34
         for i in range(tsize):
-            competitor = randint(0, self.popsize-1)
+            competitor = randint(0, POPSIZE-1)
             if (fitness[competitor] > fbest):
                 fbest = fitness[competitor]
                 best = competitor
@@ -280,10 +268,10 @@ class TinyGP():
         return best
 
     def negative_tournament(self, fitness, tsize):
-        worst = randint(0, self.popsize-1)
+        worst = randint(0, POPSIZE-1)
         fworst = 1.0e34
         for i in range(tsize):
-            competitor = randint(0, self.popsize-1)
+            competitor = randint(0, POPSIZE-1)
             if (fitness[competitor] < fworst):
                 fworst = fitness[competitor]
                 worst = competitor
@@ -319,13 +307,13 @@ class TinyGP():
         for i in range(len):
             if (random() < pmut):
                 mutsite = i
-                if (parentcopy[mutsite] < self.fset_start):
+                if (parentcopy[mutsite] < FSET_START):
                     parentcopy[mutsite] = randint(0,
                                                   self.var_number+self.random_number-1)
                 else:
                     if parentcopy[mutsite] == ADD or parentcopy[mutsite] == SUB or parentcopy[mutsite] == MUL or parentcopy[mutsite] == DIV:
-                        parentcopy[mutsite] = randint(0, self.fset_end -
-                                                      self.fset_start) + self.fset_start
+                        parentcopy[mutsite] = randint(0, FSET_END -
+                                                      FSET_START) + FSET_START
 
         return parentcopy
 
@@ -333,24 +321,24 @@ class TinyGP():
         self.print_params()
         self.stats(self.fitness, self.pop, 0)
 
-        for gen in range(1, self.generations):
+        for gen in range(1, GENERATIONS):
             if self.fbestpop > -1e-5:
                 print("PROBLEM SOLVED\n")
                 exit(0)
 
-            for indivs in range(self.popsize):
-                if random() < self.crossover_prob:
-                    parent1 = self.tournament(self.fitness, self.tsize)
-                    parent2 = self.tournament(self.fitness, self.tsize)
+            for indivs in range(POPSIZE):
+                if random() < CROSSOVER_PROB:
+                    parent1 = self.tournament(self.fitness, TSIZE)
+                    parent2 = self.tournament(self.fitness, TSIZE)
                     newind = self.crossover(
                         self.pop[parent1], self.pop[parent2])
                 else:
-                    parent = self.tournament(self.fitness, self.tsize)
+                    parent = self.tournament(self.fitness, TSIZE)
                     newind = self.mutation(
-                        self.pop[parent], self.pmut_per_node)
+                        self.pop[parent], PMUT_PER_NODE)
 
                 newfit = self.fitness_function(newind)
-                offspring = self.negative_tournament(self.fitness, self.tsize)
+                offspring = self.negative_tournament(self.fitness, TSIZE)
                 self.pop[offspring] = newind
                 self.fitness[offspring] = newfit
 
@@ -361,7 +349,7 @@ class TinyGP():
 
 
 def main():
-    fname = 'problem.dat'
+    fname = 'problems/problemC.dat'
 
     args = input().strip().split()
     s = -1

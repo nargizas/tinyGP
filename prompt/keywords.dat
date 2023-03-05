@@ -1,0 +1,10 @@
+action addition
+input_number three
+input_1_datatype integer
+input_2_datatype integer
+input_3_datatype integer
+input_format -
+output_number one
+output_1_datatype integer
+output_format -
+constraints -
